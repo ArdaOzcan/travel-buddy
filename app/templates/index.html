@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Travel Buddy Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 2rem auto; padding: 0 1rem; }
+    form.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    input, select, button { padding: 0.5rem; font-size: 0.95rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+    .flash { padding: 0.6rem; margin-bottom: 1rem; border-radius: 4px; }
+    .error { background: #fee2e2; color: #991b1b; }
+    .success { background: #dcfce7; color: #166534; }
+  </style>
+</head>
+<body>
+  <h1>Travel Buddy — Trip Demo</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      <div class="flash {{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <h2>Create Trip</h2>
+  <form class="grid" method="POST" action="{{ url_for('create_trip') }}">
+    <input type="text" name="traveler_name" placeholder="Traveler name" required>
+    <select name="destination_id" required>
+      {% for d in destinations %}
+        <option value="{{ d.destination_id }}">{{ d.city }}, {{ d.country_name }}</option>
+      {% endfor %}
+    </select>
+    <input type="date" name="start_date" required>
+    <input type="date" name="end_date" required>
+    <select name="travel_style">
+      <option value="budget">Budget</option>
+      <option value="backpacking">Backpacking</option>
+      <option value="comfort">Comfort</option>
+      <option value="luxury">Luxury</option>
+      <option value="adventure">Adventure</option>
+    </select>
+    <button type="submit">Add Trip</button>
+  </form>
+
+  <h2>Browse Trips</h2>
+  <form method="GET" action="{{ url_for('index') }}">
+    <input type="text" name="city" value="{{ city_filter }}" placeholder="Filter by city...">
+    <button type="submit">Filter</button>
+    {% if city_filter %}<a href="{{ url_for('index') }}">Reset</a>{% endif %}
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Traveler</th>
+        <th>Destination</th>
+        <th>Dates</th>
+        <th>Style</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in trips %}
+      <tr>
+        <td>{{ t.traveler_name }}</td>
+        <td>{{ t.city }}, {{ t.country_name }}</td>
+        <td>{{ t.start_date }} → {{ t.end_date }}</td>
+        <td>{{ t.travel_style }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('delete_trip', trip_id=t.trip_id) }}">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No trips found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
